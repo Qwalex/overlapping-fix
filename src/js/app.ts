@@ -1,19 +1,30 @@
 const circle1 = document.getElementById('c1');
-// const circle2 = document.getElementById('c2');
+const circle2 = document.getElementById('c2');
+const circle3 = document.getElementById('c3');
 const img: HTMLElement = document.querySelector('.img');
 const imgClientRect = img.getBoundingClientRect();
 
-let lastCorrectPosition = [];
 let circlePlaceholders = [];
+let nearPositions = [];
 const line: HTMLElement = document.querySelector('.line');
 
 img.addEventListener('mousemove', (e: MouseEvent) => {
+    console.log(checkPosition(e)) //false|true|position
+});
+
+img.addEventListener('click', (e: MouseEvent) => {
+    console.log(checkPosition(e)) //false|true|position
+});
+
+const checkPosition = (e: MouseEvent) => {
     let [offsetX, offsetY] = getOffsetByImage(e);
+    let canAdd = true;
 
     if (circlePlaceholders.length > 0) {
         circlePlaceholders.forEach(circle => circle.remove());
         circlePlaceholders = [];
     }
+    nearPositions = [];
 
     const eventData = {
         centerX: offsetX,
@@ -29,17 +40,20 @@ img.addEventListener('mousemove', (e: MouseEvent) => {
         if (distance < 0) {
             const angle = getAngle(circle, eventData);
             circlePlaceholders.push(createCircle(getShiftCoords([offsetX, offsetY], angle, Math.abs(distance))));
+            nearPositions.push(getShiftCoords([offsetX, offsetY], angle, Math.abs(distance)));
+            getShiftCoords([offsetX, offsetY], angle, Math.abs(distance));
             circle.el.classList.add('red');
             line.style.transform = `rotate(${angle}deg)`;
             line.style.width = `${Math.abs(distance)}px`;
+            canAdd = false;
         }
     });
-});
 
-img.addEventListener('click', (e: MouseEvent) => {
-    const [offsetX, offsetY] = getOffsetByImage(e);
-    const circle = createCircle([offsetX, offsetY]);
-});
+    if (!canAdd) {
+        return getAvailablePosition();
+    }
+    return true;
+}
 
 interface circle {
     left: number,
@@ -114,7 +128,7 @@ const getAngleCss = (circle1, circle2) => {
 }
 
 const getAllCircles = () => {
-    return ['c1'].map((id) => getCircle(id));
+    return ['c1', 'c2', 'c3'].map((id) => getCircle(id));
 }
 
 const createCircle = ([offsetX, offsetY]):HTMLElement => {
@@ -140,14 +154,27 @@ const degreesToRadians = (degrees) => {
 
 const getShiftCoords = ([x, y], angle, distance) => {
     return [x + distance * Math.cos(degreesToRadians(angle)), y + distance * Math.sin(degreesToRadians(angle))];
-    const newX = x * Math.cos(90 - angle) - y * Math.sin(90 - angle);
-    const newY = x + Math.sin(90 - angle) + y * Math.cos(90 - angle);
-    return [newX, newY];
 }
 
-console.group('distance');
-//console.log(getDistance(getCircle('c1'), getCircle('c2')));
-//console.log(getAngle(getCircle('c1'), getCircle('c2')))
-console.groupEnd();
+const getAvailablePosition = () => {
+    if (nearPositions.length === 0) {
+        return true;
+    }
 
-//console.log(getCircle('c1'));
+    return nearPositions.filter(([centerX, centerY]) => {
+        const hasIntersections = [];
+
+        getAllCircles().forEach((circle) => {
+            const distance = getDistance(circle, {centerX, centerY, rad: 50});
+            console.log(distance);
+            
+            if (distance < 0) {
+                hasIntersections.push(true);
+            }
+        });
+
+        console.log(hasIntersections);
+
+        return hasIntersections.length === 0;
+    });
+}

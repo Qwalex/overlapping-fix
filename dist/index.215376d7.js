@@ -515,19 +515,30 @@ function hmrAcceptRun(bundle, id) {
 
 },{}],"iGpzc":[function(require,module,exports) {
 const circle1 = document.getElementById('c1');
-// const circle2 = document.getElementById('c2');
+const circle2 = document.getElementById('c2');
+const circle3 = document.getElementById('c3');
 const img = document.querySelector('.img');
 const imgClientRect = img.getBoundingClientRect();
-let lastCorrectPosition = [];
 let circlePlaceholders = [];
+let nearPositions = [];
 const line = document.querySelector('.line');
 img.addEventListener('mousemove', (e)=>{
+    console.log(checkPosition(e)) //false|true|position
+    ;
+});
+img.addEventListener('click', (e)=>{
+    console.log(checkPosition(e)) //false|true|position
+    ;
+});
+const checkPosition = (e)=>{
     let [offsetX, offsetY] = getOffsetByImage(e);
+    let canAdd = true;
     if (circlePlaceholders.length > 0) {
         circlePlaceholders.forEach((circle)=>circle.remove()
         );
         circlePlaceholders = [];
     }
+    nearPositions = [];
     const eventData = {
         centerX: offsetX,
         centerY: offsetY,
@@ -542,19 +553,23 @@ img.addEventListener('mousemove', (e)=>{
                 offsetX,
                 offsetY
             ], angle, Math.abs(distance))));
+            nearPositions.push(getShiftCoords([
+                offsetX,
+                offsetY
+            ], angle, Math.abs(distance)));
+            getShiftCoords([
+                offsetX,
+                offsetY
+            ], angle, Math.abs(distance));
             circle.el.classList.add('red');
             line.style.transform = `rotate(${angle}deg)`;
             line.style.width = `${Math.abs(distance)}px`;
+            canAdd = false;
         }
     });
-});
-img.addEventListener('click', (e)=>{
-    const [offsetX, offsetY] = getOffsetByImage(e);
-    const circle = createCircle([
-        offsetX,
-        offsetY
-    ]);
-});
+    if (!canAdd) return getAvailablePosition();
+    return true;
+};
 const getCircle = (id)=>{
     const el = document.getElementById(id);
     const { left , right , top , bottom , width , height ,  } = el.getBoundingClientRect();
@@ -572,22 +587,24 @@ const getCircle = (id)=>{
         centerY: top - imgClientRect.top - 1 + rad
     };
 };
-const getDistance = (circle11, circle2)=>{
+const getDistance = (circle11, circle21)=>{
     const { centerX: x1 , centerY: y1 , rad ,  } = circle11;
-    const { centerX: x2 , centerY: y2 ,  } = circle2;
+    const { centerX: x2 , centerY: y2 ,  } = circle21;
     return Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2)) - rad * 2;
 };
-const getAngle = (circle12, circle2)=>{
+const getAngle = (circle12, circle22)=>{
     const { centerX: x1 , centerY: y1 , rad ,  } = circle12;
-    const { centerX: x2 , centerY: y2 ,  } = circle2;
+    const { centerX: x2 , centerY: y2 ,  } = circle22;
     return radiansToDegrees(Math.atan2(y2 - y1, x2 - x1));
 };
-const getAngleCss = (circle13, circle2)=>{
-    return getAngle(circle13, circle2) - 180;
+const getAngleCss = (circle13, circle23)=>{
+    return getAngle(circle13, circle23) - 180;
 };
 const getAllCircles = ()=>{
     return [
-        'c1'
+        'c1',
+        'c2',
+        'c3'
     ].map((id)=>getCircle(id)
     );
 };
@@ -617,10 +634,23 @@ const getShiftCoords = ([x, y], angle, distance)=>{
         y + distance * Math.sin(degreesToRadians(angle))
     ];
 };
-console.group('distance');
-//console.log(getDistance(getCircle('c1'), getCircle('c2')));
-//console.log(getAngle(getCircle('c1'), getCircle('c2')))
-console.groupEnd(); //console.log(getCircle('c1'));
+const getAvailablePosition = ()=>{
+    if (nearPositions.length === 0) return true;
+    return nearPositions.filter(([centerX, centerY])=>{
+        const hasIntersections = [];
+        getAllCircles().forEach((circle)=>{
+            const distance = getDistance(circle, {
+                centerX,
+                centerY,
+                rad: 50
+            });
+            console.log(distance);
+            if (distance < 0) hasIntersections.push(true);
+        });
+        console.log(hasIntersections);
+        return hasIntersections.length === 0;
+    });
+};
 
 },{}]},["3VBnf","iGpzc"], "iGpzc", "parcelRequire94c2")
 
