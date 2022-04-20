@@ -1184,7 +1184,7 @@ ordered-binary@^1.2.4:
 
 parcel@^2.4.1:
   version "2.4.1"
-  resolved "https://registry.npmmirror.com/parcel/-/parcel-2.4.1.tgz#e369d0c1a3f383df244eb546d0613d1df51f6b35"
+  resolved "https://registry.yarnpkg.com/parcel/-/parcel-2.4.1.tgz#e369d0c1a3f383df244eb546d0613d1df51f6b35"
   integrity sha512-H8n7cJ0rOt0AZZLuPuG6hvujUWiWz8kxx4pkqEDm31dijrbKb0pNgccXOllQ34em6r7elv6yH7lxox8jDCp0hw==
   dependencies:
     "@parcel/config-default" "2.4.1"
